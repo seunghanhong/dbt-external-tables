@@ -3,6 +3,7 @@
 * Source config extension for metadata about external file structure
 * Adapter macros to create external tables and refresh external table partitions
 * Snowflake-specific macros to create, backfill, and refresh snowpipes
+* Azure Synapse macros to create/recreate external table
 
 ## Syntax
 
@@ -55,6 +56,12 @@ sources:
           row_format:       # Hive specification
           table_properties: # Hive specification
           
+          # Azure Synapse
+          data_source: azure_data_source_name
+          file_format: azure_file_format
+          reject_type: value
+          reject_value: 0
+
           # Snowflake: create an empty table + pipe instead of an external table
           snowpipe:
             auto_ingest:    true
@@ -121,3 +128,7 @@ as a dbt source and stage-ready external table in Snowflake and Spectrum.
 * Redshift (Spectrum)
 * Snowflake
 * TK: Spark
+* Azure Synapse
+
+## Limitations
+* Azure Synapse does not support partitions or table refresh
