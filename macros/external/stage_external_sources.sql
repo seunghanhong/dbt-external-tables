@@ -8,6 +8,41 @@
     {{ exceptions.raise_compiler_error("Staging external sources is not implemented for the default adapter") }}
 {% endmacro %}
 
+{% macro azuresynapse__get_external_build_plan(source_node) %}
+
+{# Partitions are not supported in Azure Synapse external tables.
+   refresh_external_table is not required because no ALTER TABLE is supported.
+#}
+    {% set build_plan = [] %}
+    
+    {% set old_relation = adapter.get_relation(
+        database = source_node.database,
+        schema = source_node.schema,
+        identifier = source_node.identifier
+    ) %}
+    
+    {# create/recreate if not exist or ext_full_refresh is set to true #}
+    {% set create_or_replace = (old_relation is none or var('ext_full_refresh', false)) %}
+    {{ log("I am here: " ~ create_or_replace) }}
+
+    {% if create_or_replace %}
+
+        {% set build_plan = [
+                dbt_external_tables.dropif(source_node),
+                dbt_external_tables.create_external_table(source_node)
+            ]
+        %}
+        
+    {% else %}
+    
+        {{ dbt_utils.log_info("The external table exists already: " ~ old_relation) }}
+        
+    {% endif %} #}
+    
+    {% do return(build_plan) %}
+
+{% endmacro %}
+
 {% macro redshift__get_external_build_plan(source_node) %}
 
     {% set build_plan = [] %}

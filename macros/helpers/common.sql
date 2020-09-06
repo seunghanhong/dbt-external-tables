@@ -22,11 +22,22 @@
 {%- endmacro %}
 
 {% macro dropif(node) %}
-    
+    {{ adapter.dispatch('dropif')(node) }}
+{% endmacro %}
+
+{% macro default__dropif(node) %}
     {% set ddl %}
         drop table if exists {{source(node.source_name, node.name)}} cascade
     {% endset %}
     
     {{return(ddl)}}
+{% endmacro %}
 
+{% macro azuresynapse__dropif(node) %}
+    {% set ddl %}
+        if object_id('{{ node.schema }}.{{ node.name }}') is not null
+	          drop external table {{ node.schema }}.{{ node.name }}
+    {% endset %}
+    
+    {{return(ddl)}}
 {% endmacro %}

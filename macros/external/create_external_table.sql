@@ -8,6 +8,39 @@
     {{ exceptions.raise_compiler_error("External table creation is not implemented for the default adapter") }}
 {% endmacro %}
 
+{% macro azuresynapse__create_external_table(source_node) %}
+
+    {%- set columns = source_node.columns.values() -%}
+    {%- set external = source_node.external -%}
+    {%- set ext = {} -%}
+
+{# https://docs.microsoft.com/en-us/sql/t-sql/statements/create-external-table-transact-sql?view=sql-server-ver15 #}
+{# This assumes you have already created an external schema, external data source and external file format.
+   Partitions are not supported in Azure Synapse external tables.
+#}
+    create external table {{source(source_node.source_name, source_node.name)}} (
+        {% for column in columns %}
+            {{adapter.quote(column.name)}} {{column.data_type}}
+            {{- ',' if not loop.last -}}
+        {% endfor %}
+    )
+    WITH
+    (
+        {% for key, val in external.items() -%}
+            {%- if key in ['location', 'data_source', 'file_format', 'reject_type', 'reject_value', 'reject_sample_value'] -%}
+                {% do ext.update({key: val}) %}
+            {%- endif -%}
+        {% endfor -%}
+        {% for key, val in ext.items() -%}
+            {% if key == 'location' %}
+            {{ key }} = '{{ val }}'{{', ' if not loop.last}}
+            {% else -%}
+            {{ key }} = {{ val }}{{', ' if not loop.last}}
+            {% endif -%}
+        {%- endfor %}
+    )
+{% endmacro %}
+
 {% macro redshift__create_external_table(source_node) %}
 
     {%- set columns = source_node.columns.values() -%}
