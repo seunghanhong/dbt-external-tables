@@ -3,6 +3,7 @@
 * Source config extension for metadata about external file structure
 * Adapter macros to create external tables and refresh external table partitions
 * Snowflake-specific macros to create, backfill, and refresh snowpipes
+* Azure Synapse macros to create/recreate table and refresh data with `COPY` statement
 
 ## Syntax
 
@@ -55,6 +56,28 @@ sources:
           row_format:       # Hive specification
           table_properties: # Hive specification
           
+          # Azure Synapse: copy statement
+          synapse:
+            load_type: copy
+            truncate: false # | true
+            file_type: 'CSV'  # | 'PARQUET' | 'ORC'
+            credential:
+              identity: 'Storage Account Key' # | 'Shared Access Signature' | '@<OAuth_2.0_Token_EndPoint>' | 'Managed Identity'
+              secret: "{{ env_var('SECRET_KEY') }}"
+            errorfile: '[http(s)://storageaccount/container]/errorfile_directory[/]]'
+            errorfile_credential:
+              identity: 'Storage Account Key' # | 'Shared Access Signature' | '@<OAuth_2.0_Token_EndPoint>' | 'Managed Identity'
+              secret: "{{ env_var('SECRET_KEY') }}"
+            maxerrors: 0
+            compression: 'Gzip' # | 'DefaultCodec'| 'Snappy'
+            fieldquote: '"'
+            fieldterminator: ','
+            rowterminator: '\n'
+            firstrow: 2
+            dateformat: ymd
+            encoding: 'UTF8'
+            identity_insert: 'OFF'
+
           # Snowflake: create an empty table + pipe instead of an external table
           snowpipe:
             auto_ingest:    true
@@ -121,3 +144,7 @@ as a dbt source and stage-ready external table in Snowflake and Spectrum.
 * Redshift (Spectrum)
 * Snowflake
 * TK: Spark
+* Azure Synapse
+
+## Limitations
+* Azure Synapse does not support partitions or table refresh for external tables

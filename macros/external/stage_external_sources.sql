@@ -71,6 +71,43 @@
 
 {% endmacro %}
 
+{% macro azuresynapse__get_external_build_plan(source_node) %}
+
+{# Partitions are not supported in Azure Synapse external tables.
+   refresh_external_table is not required because no ALTER TABLE is supported.
+#}
+    {% set build_plan = [] %}
+
+    {% set old_relation = adapter.get_relation(
+        database = source_node.database,
+        schema = source_node.schema,
+        identifier = source_node.identifier
+    ) %}
+    
+    {# create/recreate if not exist or ext_full_refresh is set to true #}
+    {% set create_or_replace = (old_relation is none or var('ext_full_refresh', false)) %}
+    
+    {% if source_node.external.synapse.load_type == 'copy' %}
+        {% if create_or_replace %}
+            {% set build_plan = build_plan + [
+                dbt_external_tables.dropif(source_node),
+                dbt_external_tables.azuresynapse_create_empty_table(source_node),
+                dbt_external_tables.azuresynapse_get_copy_sql(source_node, old_relation)
+            ] %}
+            
+        {% else %}
+
+            {% set build_plan = build_plan + [
+                dbt_external_tables.azuresynapse_get_copy_sql(source_node, old_relation)
+            ] %}
+            
+        {% endif %}
+    {% endif %}
+
+    {% do return(build_plan) %}
+
+{% endmacro %}
+
 {% macro stage_external_sources(select=none) %}
 
     {% set sources_to_stage = [] %}

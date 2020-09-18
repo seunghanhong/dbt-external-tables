@@ -1,0 +1,36 @@
+version: 2
+
+sources:
+  - name: my_source
+    database: my_database
+    schema: my_dev
+  
+    tables:
+      - name: my_table
+
+        external:
+          location: "https://{{ my_storage_account }}.blob.core.windows.net/{{ my_container }}/file_name_*.csv"
+          synapse:
+            load_type: copy
+            truncate: true
+            file_type: 'CSV'
+            credential:
+              identity: 'Storage Account Key'
+              secret: "{{ env_var('SECRET_KEY') }}"
+            fieldquote: ''
+            fieldterminator: ','
+            rowterminator: '0x0A'
+            firstrow: 2
+            dateformat: ymd
+            encoding: 'UTF8'
+          
+        columns:
+          - name: col1
+            data_type: varchar(255)
+            description: "column 1"
+          - name: col2
+            data_type: varchar(255)
+            description: "column 2"
+          - name: col3
+            data_type: datetime
+            description: "column 3"
