@@ -108,7 +108,7 @@
 
 {% endmacro %}
 
-{% macro stage_external_sources(select=none) %}
+{% macro stage_external_sources(select=none, tag=none) %}
 
     {% set sources_to_stage = [] %}
     
@@ -134,7 +134,15 @@
                     {% endif %}
                     
                 {% endfor %}
-                        
+            
+            {% elif tag %}
+
+                {% for src in tag.split(' ') %}
+                    {% if src in node.tags %}
+                        {% do sources_to_stage.append(node) %}
+                    {% endif %}
+                {% endfor %}
+
             {% else %}
             
                 {% do sources_to_stage.append(node) %}
