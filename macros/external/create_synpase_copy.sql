@@ -1,4 +1,4 @@
-{% macro azuresynapse_create_empty_table(source_node) %}
+{% macro synapse_create_empty_table(source_node) %}
     {%- set relation = source(source_node.source_name, source_node.name) %}
     {%- set columns = source_node.columns.values() %}
     
@@ -19,7 +19,7 @@
     {# extend metadata here #}
 {% endmacro %}
 
-{% macro azuresynapse_get_copy_sql(source_node, table_exists) %}
+{% macro synapse_get_copy_sql(source_node, table_exists) %}
     {%- set relation = source(source_node.source_name, source_node.name) %}
     {%- set synapse = source_node.external.synapse %}
     {%- set truncate = synapse.get('truncate', false) if synapse is mapping %}

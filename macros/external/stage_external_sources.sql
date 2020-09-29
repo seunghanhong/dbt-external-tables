@@ -71,7 +71,7 @@
 
 {% endmacro %}
 
-{% macro azuresynapse__get_external_build_plan(source_node) %}
+{% macro sqlserver__get_external_build_plan(source_node) %}
 
 {# Partitions are not supported in Azure Synapse external tables.
    refresh_external_table is not required because no ALTER TABLE is supported.
@@ -91,14 +91,14 @@
         {% if create_or_replace %}
             {% set build_plan = build_plan + [
                 dbt_external_tables.dropif(source_node),
-                dbt_external_tables.azuresynapse_create_empty_table(source_node),
-                dbt_external_tables.azuresynapse_get_copy_sql(source_node, old_relation)
+                dbt_external_tables.synapse_create_empty_table(source_node),
+                dbt_external_tables.synapse_get_copy_sql(source_node, old_relation)
             ] %}
             
         {% else %}
 
             {% set build_plan = build_plan + [
-                dbt_external_tables.azuresynapse_get_copy_sql(source_node, old_relation)
+                dbt_external_tables.synapse_get_copy_sql(source_node, old_relation)
             ] %}
             
         {% endif %}

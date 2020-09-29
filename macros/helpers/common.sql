@@ -33,7 +33,7 @@
     {{return(ddl)}}
 {% endmacro %}
 
-{% macro azuresynapse__dropif(node) %}
+{% macro sqlserver__dropif(node) %}
     {% set ddl %}
         if object_id('{{ node.schema }}.{{ node.name }}') is not null
       {%- if node.external.synapse.load_type == 'copy' %}
